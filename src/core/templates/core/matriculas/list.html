@@ -1,0 +1,84 @@
+{% extends 'core/base.html' %}
+{% block title %}Matrículas — Gerente de Notas{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <h1 class="page-title"><i class="bi bi-journal-check me-2"></i>Matrículas</h1>
+  <a href="{% url 'matricula_create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Matricular Aluno
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex gap-2 flex-wrap py-2">
+    <form method="get" class="d-flex gap-2 flex-grow-1 flex-wrap">
+      <input type="search" name="q" value="{{ q }}" placeholder="Buscar aluno ou disciplina…"
+             class="form-control form-control-sm" style="max-width:240px">
+      <select name="status" class="form-select form-select-sm" style="max-width:160px">
+        <option value="">Todos os status</option>
+        <option value="aprovado" {% if status_filtro == 'aprovado' %}selected{% endif %}>Aprovado</option>
+        <option value="reprovado" {% if status_filtro == 'reprovado' %}selected{% endif %}>Reprovado</option>
+        <option value="matriculado" {% if status_filtro == 'matriculado' %}selected{% endif %}>Matriculado</option>
+      </select>
+      <select name="order" class="form-select form-select-sm" style="max-width:180px">
+        <option value="-data_matricula" {% if order == '-data_matricula' %}selected{% endif %}>Data ↓</option>
+        <option value="data_matricula" {% if order == 'data_matricula' %}selected{% endif %}>Data ↑</option>
+        <option value="nota" {% if order == 'nota' %}selected{% endif %}>Nota ↑</option>
+        <option value="-nota" {% if order == '-nota' %}selected{% endif %}>Nota ↓</option>
+      </select>
+      <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrar</button>
+      {% if q or status_filtro %}<a href="{% url 'matricula_list' %}" class="btn btn-outline-danger btn-sm">✕</a>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>#</th><th>Aluno</th><th>Disciplina</th><th>Data</th><th class="text-center">N1</th><th class="text-center">N2</th><th class="text-center">N3</th><th class="text-center">Média</th><th>Status</th><th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in matriculas %}
+        <tr>
+          <td class="text-muted small">{{ m.id_matricula }}</td>
+          <td><strong>{{ m.fk_id_aluno.nome }}</strong></td>
+          <td>{{ m.fk_id_disciplina.nome_disciplina }}</td>
+          <td>{{ m.data_matricula|date:"d/m/Y" }}</td>
+          <td class="text-center small">{% if m.nota1 != None %}{{ m.nota1 }}{% else %}—{% endif %}</td>
+          <td class="text-center small">{% if m.nota2 != None %}{{ m.nota2 }}{% else %}—{% endif %}</td>
+          <td class="text-center small">{% if m.nota3 != None %}{{ m.nota3 }}{% else %}—{% endif %}</td>
+          <td class="text-center">
+            {% if m.nota != None %}
+              <strong class="{% if m.nota >= 7 %}text-success{% elif m.nota >= 5 %}text-warning{% else %}text-danger{% endif %}">{{ m.nota }}</strong>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if m.status == 'aprovado' %}
+              <span class="badge badge-aprovado px-2 py-1">Aprovado</span>
+            {% elif m.status == 'reprovado' %}
+              <span class="badge badge-reprovado px-2 py-1">Reprovado</span>
+            {% elif m.status == 'matriculado' %}
+              <span class="badge badge-matriculado px-2 py-1">Matriculado</span>
+            {% else %}—{% endif %}
+          </td>
+          <td class="text-center">
+            <a href="{% url 'registrar_nota' m.pk %}" class="btn btn-sm btn-outline-success me-1" title="Registrar Nota">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{% url 'matricula_update' m.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'matricula_delete' m.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10" class="text-center text-muted py-4">Nenhuma matrícula encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer text-muted small py-2">{{ matriculas|length }} registro(s)</div>
+</div>
+{% endblock %}

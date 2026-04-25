@@ -1,0 +1,222 @@
+{% extends 'core/base.html' %}
+{% block title %}Notas — Gerente de Notas{% endblock %}
+
+{% block content %}
+
+<style>
+  .page-title {
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .card {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+
+  .table {
+    margin-bottom: 0;
+    vertical-align: middle;
+  }
+
+  .table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 14px;
+  }
+
+  .table tbody td {
+    padding: 14px;
+    border-color: #f1f5f9;
+  }
+
+  .table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .student-name {
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .disciplina-text {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .badge-nota {
+    min-width: 48px;
+    display: inline-block;
+    border-radius: 999px;
+    font-weight: 700;
+    padding: 6px 10px;
+  }
+
+  .badge-status {
+    border-radius: 999px;
+    font-weight: 700;
+    padding: 7px 12px;
+  }
+
+  .btn-edit {
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (max-width: 768px) {
+    .table thead {
+      font-size: .75rem;
+    }
+
+    .table tbody td {
+      font-size: .85rem;
+      padding: 10px;
+    }
+
+    .page-title {
+      font-size: 1.4rem;
+    }
+  }
+</style>
+
+<div class="topbar">
+  <h1 class="page-title">
+    <i class="bi bi-pencil-square me-2"></i>Gerenciar Notas
+  </h1>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Disciplina</th>
+          <th class="text-center">Nota 1</th>
+          <th class="text-center">Nota 2</th>
+          <th class="text-center">Nota 3</th>
+          <th class="text-center">Média</th>
+          <th class="text-center">Status</th>
+          <th class="text-center">Editar</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for m in notas %}
+        <tr>
+
+          <td>
+            <span class="student-name">
+              {{ m.fk_id_aluno.nome }}
+            </span>
+          </td>
+
+          <td>
+            <span class="disciplina-text">
+              {{ m.fk_id_disciplina.nome_disciplina }}
+            </span>
+            <div class="text-muted small">
+              {{ m.fk_id_disciplina.fk_id_professor.nome }}
+            </div>
+          </td>
+
+          <!-- NOTA 1 -->
+          <td class="text-center">
+            {% if m.nota1 != None %}
+              {% if m.nota1 >= 7 %}
+                <span class="badge-nota" style="background:#d1fae5;color:#065f46">{{ m.nota1 }}</span>
+              {% elif m.nota1 >= 5 %}
+                <span class="badge-nota" style="background:#fef9c3;color:#713f12">{{ m.nota1 }}</span>
+              {% else %}
+                <span class="badge-nota" style="background:#fee2e2;color:#991b1b">{{ m.nota1 }}</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+
+          <!-- NOTA 2 -->
+          <td class="text-center">
+            {% if m.nota2 != None %}
+              {% if m.nota2 >= 7 %}
+                <span class="badge-nota" style="background:#d1fae5;color:#065f46">{{ m.nota2 }}</span>
+              {% elif m.nota2 >= 5 %}
+                <span class="badge-nota" style="background:#fef9c3;color:#713f12">{{ m.nota2 }}</span>
+              {% else %}
+                <span class="badge-nota" style="background:#fee2e2;color:#991b1b">{{ m.nota2 }}</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+
+          <!-- NOTA 3 -->
+          <td class="text-center">
+            {% if m.nota3 != None %}
+              {% if m.nota3 >= 7 %}
+                <span class="badge-nota" style="background:#d1fae5;color:#065f46">{{ m.nota3 }}</span>
+              {% elif m.nota3 >= 5 %}
+                <span class="badge-nota" style="background:#fef9c3;color:#713f12">{{ m.nota3 }}</span>
+              {% else %}
+                <span class="badge-nota" style="background:#fee2e2;color:#991b1b">{{ m.nota3 }}</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+
+          <!-- MÉDIA -->
+          <td class="text-center">
+            {% if m.nota != None %}
+              <strong>{{ m.nota }}</strong>
+            {% else %}
+              <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+
+          <!-- STATUS -->
+          <td class="text-center">
+            {% if m.status == 'aprovado' %}
+              <span class="badge-status" style="background:#d1fae5;color:#065f46">Aprovado</span>
+            {% elif m.status == 'reprovado' %}
+              <span class="badge-status" style="background:#fee2e2;color:#991b1b">Reprovado</span>
+            {% elif m.status == 'matriculado' %}
+              <span class="badge-status" style="background:#dbeafe;color:#1e40af">Matriculado</span>
+            {% else %}
+              <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+
+          <!-- EDITAR -->
+          <td class="text-center">
+            <a href="{% url 'nota_editar' m.pk %}" class="btn btn-outline-primary btn-edit">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </td>
+
+        </tr>
+
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">
+            <i class="bi bi-inbox me-2"></i>Nenhuma matrícula encontrada.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+{% endblock %}

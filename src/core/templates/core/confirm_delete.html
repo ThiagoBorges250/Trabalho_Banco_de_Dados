@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+{% block title %}Excluir — Gerente de Notas{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <h1 class="page-title text-danger"><i class="bi bi-trash me-2"></i>Excluir {{ tipo }}</h1>
+</div>
+
+<div class="card" style="max-width:480px">
+  <div class="card-body p-4">
+    <p class="mb-3">Tem certeza que deseja excluir <strong>{{ obj }}</strong>?</p>
+    <p class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i>Esta ação não pode ser desfeita.</p>
+    <form method="post" class="d-flex gap-2 mt-4">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">
+        <i class="bi bi-trash me-1"></i>Confirmar exclusão
+      </button>
+      <a href="{{ cancel_url }}" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

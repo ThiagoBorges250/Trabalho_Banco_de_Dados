@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+{% block title %}Disciplinas — Gerente de Notas{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <h1 class="page-title"><i class="bi bi-book me-2"></i>Disciplinas</h1>
+  <a href="{% url 'disciplina_create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nova Disciplina
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex gap-2 flex-wrap py-2">
+    <form method="get" class="d-flex gap-2 flex-grow-1">
+      <input type="search" name="q" value="{{ q }}" placeholder="Buscar por disciplina ou professor…"
+             class="form-control form-control-sm" style="max-width:300px">
+      <select name="order" class="form-select form-select-sm" style="max-width:180px">
+        <option value="nome_disciplina" {% if order == 'nome_disciplina' %}selected{% endif %}>Nome A→Z</option>
+        <option value="-nome_disciplina" {% if order == '-nome_disciplina' %}selected{% endif %}>Nome Z→A</option>
+        <option value="carga_horaria" {% if order == 'carga_horaria' %}selected{% endif %}>Carga ↑</option>
+        <option value="-carga_horaria" {% if order == '-carga_horaria' %}selected{% endif %}>Carga ↓</option>
+      </select>
+      <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrar</button>
+      {% if q %}<a href="{% url 'disciplina_list' %}" class="btn btn-outline-danger btn-sm">✕</a>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>#</th><th>Disciplina</th><th>Carga Horária</th><th>Professor</th><th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in disciplinas %}
+        <tr>
+          <td class="text-muted small">{{ d.id_disciplina }}</td>
+          <td><strong>{{ d.nome_disciplina }}</strong></td>
+          <td>{{ d.carga_horaria }}h</td>
+          <td>
+            <span class="badge bg-light text-dark border">
+              <i class="bi bi-person-badge me-1"></i>{{ d.fk_id_professor.nome }}
+            </span>
+          </td>
+          <td class="text-center">
+            <a href="{% url 'disciplina_update' d.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'disciplina_delete' d.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Nenhuma disciplina encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer text-muted small py-2">{{ disciplinas|length }} registro(s)</div>
+</div>
+{% endblock %}
