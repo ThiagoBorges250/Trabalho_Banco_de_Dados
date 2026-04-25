@@ -1,3 +1,4 @@
+
 # 📚 Sistema Gerente de Notas
 
 ## 📌 Descrição
@@ -75,99 +76,6 @@ Relacionamentos:
 * Um aluno pode se matricular em várias disciplinas
 * A tabela matrícula conecta alunos e disciplinas
 
----
-
-## 🖼️ Prints da Aplicação
-
-### 🔐 Tela de Login
-
-(INSERIR PRINT AQUI)
-
-### 📋 Tela Principal
-
-(INSERIR PRINT AQUI)
-
-### 🔎 Consulta com JOIN
-
-(INSERIR PRINT AQUI)
-
----
-
-## ⚙️ Como Executar o Projeto
-
-### 1. Clonar o repositório
-
-```bash
-git clone https://github.com/SEU_USUARIO/gerente_notas.git
-```
-
----
-
-### 2. Acessar o projeto
-
-```bash
-cd gerente_notas/src
-```
-
----
-
-### 3. Instalar dependências
-
-```bash
-pip install django psycopg2-binary
-```
-
----
-
-### 4. Configurar o banco de dados
-
-No arquivo `settings.py`, configure:
-
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gerente_notas',
-        'USER': 'postgres',
-        'PASSWORD': 'sua_senha',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-```
-
----
-
-### 5. Aplicar migrações
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
----
-
-### 6. Criar usuário administrador
-
-```bash
-python manage.py createsuperuser
-```
-
----
-
-### 7. Executar o sistema
-
-```bash
-python manage.py runserver
-```
-
-Acesse:
-
-```
-http://127.0.0.1:8000/
-```
-
----
 
 ## 🎥 Vídeo Demonstrativo
 
@@ -210,3 +118,6 @@ Projeto desenvolvido para a disciplina de **Banco de Dados**.
 Professor: **Anderson Costa**
 
 ---
+=======
+# Trabalho_Banco_de_Dados
+>>>>>>> 8e1c933840767fb85058ec3166812f5c9a015938
