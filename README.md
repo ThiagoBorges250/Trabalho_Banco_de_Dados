@@ -80,7 +80,7 @@ Relacionamentos:
 ## 🎥 Vídeo Demonstrativo
 
 🔗 Link do vídeo:
-https://youtu.be/dbZfyrzHPAI
+https://drive.google.com/uc?id=1eb8qdmASeKHIpgChyErokfuOVIvIduei&export=download
 
 ---
 ## 🌐 Acesso ao Sistema
