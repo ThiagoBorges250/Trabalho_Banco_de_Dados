@@ -1,10 +1,15 @@
 from pathlib import Path
+import os
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-gerente-notas-troque-em-producao-xk3p9z'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-gerente-notas-troque-em-producao-xk3p9z'
+)
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -20,6 +25,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -48,12 +54,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gerente_notas.wsgi.application'
 
-# ─── BANCO DE DADOS ───────────────────────────────────────────────────────────
-# Configure as credenciais do seu PostgreSQL abaixo:
 DATABASES = {
-    'default': dj_database_url.parse("postgresql://trabalhobd2_user:TGB4h5yU5H66vMMraPEf2mfnEq3NHo9n@dpg-d7mvk6j7uimc73b5jro0-a.ohio-postgres.render.com/trabalhobd2")
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')
+    )
 }
-# ─────────────────────────────────────────────────────────────────────────────
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -68,6 +73,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
