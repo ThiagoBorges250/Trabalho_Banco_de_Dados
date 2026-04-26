@@ -80,9 +80,29 @@ Relacionamentos:
 ## 🎥 Vídeo Demonstrativo
 
 🔗 Link do vídeo:
-(INSERIR LINK AQUI)
+https://youtu.be/dbZfyrzHPAI
 
 ---
+## 🌐 Acesso ao Sistema
+
+O sistema está disponível online e pode ser acessado através do link abaixo:
+
+🔗 **Link do sistema:**
+https://trabalho-banco-de-dados-wjy2.onrender.com/login/?next=/
+
+---
+
+## 🔐 Credenciais de Acesso
+
+Para testar o sistema, utilize o usuário Thiago com a senha 1234.
+
+---
+
+## 📌 Observações
+
+* O sistema está hospedado na plataforma Render
+* Pode haver um pequeno tempo de carregamento inicial devido ao plano gratuito
+* O acesso deve ser realizado por computador
 
 ## 📊 Exemplos de Consultas (JOIN)
 
