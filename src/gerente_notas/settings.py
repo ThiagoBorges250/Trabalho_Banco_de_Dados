@@ -51,7 +51,7 @@ WSGI_APPLICATION = 'gerente_notas.wsgi.application'
 # ─── BANCO DE DADOS ───────────────────────────────────────────────────────────
 # Configure as credenciais do seu PostgreSQL abaixo:
 DATABASES = {
-    'default': dj_database_url.parse("https://trabalho-banco-de-dados-wjy2.onrender.com")
+    'default': dj_database_url.parse("postgresql://trabalhobd2_user:TGB4h5yU5H66vMMraPEf2mfnEq3NHo9n@dpg-d7mvk6j7uimc73b5jro0-a.ohio-postgres.render.com/trabalhobd2")
 }
 # ─────────────────────────────────────────────────────────────────────────────
 
