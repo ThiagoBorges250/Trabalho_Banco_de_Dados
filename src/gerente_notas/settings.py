@@ -51,14 +51,7 @@ WSGI_APPLICATION = 'gerente_notas.wsgi.application'
 # ─── BANCO DE DADOS ───────────────────────────────────────────────────────────
 # Configure as credenciais do seu PostgreSQL abaixo:
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'TrabalhoBD2',      # nome do banco
-        'USER': 'postgres',           # seu usuário
-        'PASSWORD': 'root',       # sua senha
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.parse("https://trabalho-banco-de-dados-wjy2.onrender.com")
 }
 # ─────────────────────────────────────────────────────────────────────────────
 
