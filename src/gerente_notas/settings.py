@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from django.contrib.messages import constants as message_constants
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,6 +13,10 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
+
+# Necessário atrás do proxy HTTPS do Render (evita erro 403 CSRF no login)
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -56,7 +61,7 @@ WSGI_APPLICATION = 'gerente_notas.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL')
+        default='postgresql://postgres:root@localhost:5432/Gerente_Notas'
     )
 }
 
@@ -80,3 +85,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# Bootstrap usa 'danger' (e não 'error') para alertas vermelhos
+MESSAGE_TAGS = {message_constants.ERROR: 'danger'}

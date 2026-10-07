@@ -50,7 +50,7 @@
     color: #374151;
   }
 
-  .badge-nota {
+  .badge-media {
     min-width: 48px;
     display: inline-block;
     border-radius: 999px;
@@ -102,9 +102,6 @@
         <tr>
           <th>Aluno</th>
           <th>Disciplina</th>
-          <th class="text-center">Nota 1</th>
-          <th class="text-center">Nota 2</th>
-          <th class="text-center">Nota 3</th>
           <th class="text-center">Média</th>
           <th class="text-center">Status</th>
           <th class="text-center">Editar</th>
@@ -130,68 +127,55 @@
             </div>
           </td>
 
-          <!-- NOTA 1 -->
-          <td class="text-center">
-            {% if m.nota1 != None %}
-              {% if m.nota1 >= 7 %}
-                <span class="badge-nota" style="background:#d1fae5;color:#065f46">{{ m.nota1 }}</span>
-              {% elif m.nota1 >= 5 %}
-                <span class="badge-nota" style="background:#fef9c3;color:#713f12">{{ m.nota1 }}</span>
-              {% else %}
-                <span class="badge-nota" style="background:#fee2e2;color:#991b1b">{{ m.nota1 }}</span>
-              {% endif %}
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-
-          <!-- NOTA 2 -->
-          <td class="text-center">
-            {% if m.nota2 != None %}
-              {% if m.nota2 >= 7 %}
-                <span class="badge-nota" style="background:#d1fae5;color:#065f46">{{ m.nota2 }}</span>
-              {% elif m.nota2 >= 5 %}
-                <span class="badge-nota" style="background:#fef9c3;color:#713f12">{{ m.nota2 }}</span>
-              {% else %}
-                <span class="badge-nota" style="background:#fee2e2;color:#991b1b">{{ m.nota2 }}</span>
-              {% endif %}
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-
-          <!-- NOTA 3 -->
-          <td class="text-center">
-            {% if m.nota3 != None %}
-              {% if m.nota3 >= 7 %}
-                <span class="badge-nota" style="background:#d1fae5;color:#065f46">{{ m.nota3 }}</span>
-              {% elif m.nota3 >= 5 %}
-                <span class="badge-nota" style="background:#fef9c3;color:#713f12">{{ m.nota3 }}</span>
-              {% else %}
-                <span class="badge-nota" style="background:#fee2e2;color:#991b1b">{{ m.nota3 }}</span>
-              {% endif %}
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-
           <!-- MÉDIA -->
           <td class="text-center">
-            {% if m.nota != None %}
-              <strong>{{ m.nota }}</strong>
+            {% if m.media != None %}
+
+              {% if m.media >= 7 %}
+                <span class="badge-media"
+                      style="background:#d1fae5;color:#065f46">
+                  {{ m.media|floatformat:2 }}
+                </span>
+
+              {% elif m.media >= 5 %}
+                <span class="badge-media"
+                      style="background:#fef9c3;color:#713f12">
+                  {{ m.media|floatformat:2 }}
+                </span>
+
+              {% else %}
+                <span class="badge-media"
+                      style="background:#fee2e2;color:#991b1b">
+                  {{ m.media|floatformat:2 }}
+                </span>
+
+              {% endif %}
+
             {% else %}
-              <span class="text-muted small">—</span>
+              <span class="text-muted">—</span>
             {% endif %}
           </td>
 
           <!-- STATUS -->
           <td class="text-center">
             {% if m.status == 'aprovado' %}
-              <span class="badge-status" style="background:#d1fae5;color:#065f46">Aprovado</span>
+              <span class="badge-status"
+                    style="background:#d1fae5;color:#065f46">
+                Aprovado
+              </span>
+
             {% elif m.status == 'reprovado' %}
-              <span class="badge-status" style="background:#fee2e2;color:#991b1b">Reprovado</span>
+              <span class="badge-status"
+                    style="background:#fee2e2;color:#991b1b">
+                Reprovado
+              </span>
+
             {% elif m.status == 'matriculado' %}
-              <span class="badge-status" style="background:#dbeafe;color:#1e40af">Matriculado</span>
+              <span class="badge-status"
+                    style="background:#dbeafe;color:#1e40af">
+                Matriculado
+              </span>
+
             {% else %}
               <span class="text-muted small">—</span>
             {% endif %}
@@ -199,7 +183,9 @@
 
           <!-- EDITAR -->
           <td class="text-center">
-            <a href="{% url 'nota_editar' m.pk %}" class="btn btn-outline-primary btn-edit">
+            <a href="{% url 'nota_editar' m.pk %}"
+               class="btn btn-outline-primary btn-edit"
+               title="Lançar / editar notas">
               <i class="bi bi-pencil"></i>
             </a>
           </td>
@@ -208,8 +194,9 @@
 
         {% empty %}
         <tr>
-          <td colspan="8" class="text-center text-muted py-4">
-            <i class="bi bi-inbox me-2"></i>Nenhuma matrícula encontrada.
+          <td colspan="5" class="text-center text-muted py-4">
+            <i class="bi bi-inbox me-2"></i>
+            Nenhuma matrícula encontrada.
           </td>
         </tr>
         {% endfor %}

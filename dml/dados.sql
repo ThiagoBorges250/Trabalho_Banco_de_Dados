@@ -13,18 +13,18 @@ INSERT INTO disciplinas (nome_disciplina, carga_horaria, fk_id_professor) VALUES
 ('Algoritmos', 80, 2),
 ('Engenharia de Software', 60, 3);
 
-INSERT INTO matricula (fk_id_aluno, fk_id_disciplina, data_matricula, nota, status) VALUES
-(1, 1, '2026-04-10', 8.5, 'aprovado'),
-(1, 2, '2026-04-10', 7.0, 'aprovado'),
-(2, 1, '2026-04-11', 6.0, 'reprovado'),
-(2, 3, '2026-04-11', 9.0, 'aprovado'),
-(3, 2, '2026-04-12', 5.5, 'reprovado'),
-(3, 3, '2026-04-12', 0.0, 'matriculado');
+INSERT INTO matricula (fk_id_aluno, fk_id_disciplina, data_matricula, nota1, nota2, nota3, status) VALUES
+(1, 1, '2026-04-10', 8.5, 8.5, 8.5, 'aprovado'),
+(1, 2, '2026-04-10', 7.0, 7.0, 7.0, 'aprovado'),
+(2, 1, '2026-04-11', 6.0, 6.0, 6.0, 'reprovado'),
+(2, 3, '2026-04-11', 9.0, 9.0, 9.0, 'aprovado'),
+(3, 2, '2026-04-12', 5.5, 5.5, 5.5, 'reprovado'),
+(3, 3, '2026-04-12', NULL, NULL, NULL, 'matriculado');
 
-UPDATE matricula SET nota = 5.0 
+UPDATE matricula SET nota1 = 5.0, nota2 = 5.0, nota3 = 5.0 
 WHERE fk_id_aluno = 3 AND fk_id_disciplina = 2;
 
-UPDATE matricula SET nota = 8.0 
+UPDATE matricula SET nota1 = 8.0, nota2 = 8.0, nota3 = 8.0 
 WHERE fk_id_aluno = 3 AND fk_id_disciplina = 3;
 
 UPDATE matricula SET status = 'aprovado'

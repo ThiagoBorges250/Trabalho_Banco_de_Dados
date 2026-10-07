@@ -18,7 +18,7 @@ ORDER BY data_nascimento DESC;
 SELECT nome, data_nascimento FROM alunos
 ORDER BY data_nascimento ASC;
 
-SELECT nome, nome_disciplina, nota FROM matricula
+SELECT nome, nome_disciplina, nota1, nota2, nota3 FROM matricula
 INNER JOIN alunos ON fk_id_aluno = id_aluno
 INNER JOIN disciplinas ON fk_id_disciplina = id_disciplina;
 
@@ -26,18 +26,18 @@ SELECT nome, nome_disciplina FROM alunos
 LEFT JOIN matricula ON id_aluno = fk_id_aluno
 LEFT JOIN disciplinas ON fk_id_disciplina = id_disciplina;
 
-SELECT a.nome, d.nome_disciplina, p.nome AS professor, nota FROM matricula
+SELECT a.nome, d.nome_disciplina, p.nome AS professor, nota1, nota2, nota3 FROM matricula
 INNER JOIN alunos a ON fk_id_aluno = id_aluno
 INNER JOIN disciplinas d ON fk_id_disciplina = id_disciplina
 INNER JOIN professores p ON fk_id_professor = id_professor;
 
-SELECT a.nome, d.nome_disciplina, m.nota
+SELECT a.nome, d.nome_disciplina, m.nota1, m.nota2, m.nota3
 FROM matricula m
 INNER JOIN alunos a ON m.fk_id_aluno = a.id_aluno
 INNER JOIN disciplinas d ON m.fk_id_disciplina = d.id_disciplina
 WHERE m.status = 'aprovado';
 
-SELECT a.nome, d.nome_disciplina, m.nota
+SELECT a.nome, d.nome_disciplina, m.nota1, m.nota2, m.nota3
 FROM matricula m
 INNER JOIN alunos a ON m.fk_id_aluno = a.id_aluno
 INNER JOIN disciplinas d ON m.fk_id_disciplina = d.id_disciplina

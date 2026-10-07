@@ -1,0 +1,138 @@
+{% extends 'core/base.html' %}
+{% block title %}Média do Aluno — Gerente de Notas{% endblock %}
+
+{% block content %}
+<style>
+  .media-hero { display:flex; align-items:center; gap:1.75rem; flex-wrap:wrap; }
+  .media-ring {
+    --pct: 0; --cor: #6b7a8d;
+    width: 150px; height: 150px; border-radius: 50%;
+    background: conic-gradient(var(--cor) calc(var(--pct) * 1%), #e9edf2 0);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .media-ring.ok  { --cor:#10b981; }
+  .media-ring.bad { --cor:#ef4444; }
+  .media-ring .inner {
+    width: 118px; height: 118px; border-radius: 50%; background:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .media-ring .valor { font-size:2.2rem; font-weight:700; line-height:1; color:#1a1f2e; }
+  .media-ring .rotulo { font-size:.7rem; text-transform:uppercase; letter-spacing:.8px; color:#6b7a8d; margin-top:4px; }
+  .mini-stat { background:#f4f6f9; border-radius:10px; padding:.75rem 1rem; min-width:110px; }
+  .mini-stat .n { font-size:1.5rem; font-weight:700; line-height:1.1; }
+  .mini-stat .l { font-size:.75rem; color:#6b7a8d; }
+  .nota-pill { display:inline-block; min-width:42px; text-align:center; padding:.15rem .5rem;
+               border-radius:6px; background:#f4f6f9; font-weight:600; font-size:.85rem; }
+  .nota-pill.vazia { color:#9aa7b8; font-weight:400; }
+  .barra { height:8px; background:#e9edf2; border-radius:4px; overflow:hidden; min-width:90px; }
+  .barra > span { display:block; height:100%; border-radius:4px; background:#6b7a8d; }
+  .barra.ok > span { background:#10b981; }
+  .barra.bad > span { background:#ef4444; }
+</style>
+
+<div class="topbar">
+  <h1 class="page-title"><i class="bi bi-calculator me-2"></i>Média do Aluno</h1>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <div class="col-12 col-md-8 col-lg-6">
+        <label class="form-label small text-muted mb-1">Selecione o aluno</label>
+        <select name="id_aluno" class="form-select" required>
+          <option value="">Escolha um aluno…</option>
+          {% for a in alunos %}
+          <option value="{{ a.id_aluno }}" {% if aluno_selecionado == a.id_aluno|stringformat:"s" %}selected{% endif %}>{{ a.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Consultar média</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if aluno %}
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="media-hero">
+      <div class="media-ring {% if situacao == 'aprovado' %}ok{% elif situacao == 'reprovado' %}bad{% endif %}" style="--pct: {{ media_pct }};">
+        <div class="inner">
+          <span class="valor">{% if media is not None %}{{ media|floatformat:2 }}{% else %}—{% endif %}</span>
+          <span class="rotulo">Média geral</span>
+        </div>
+      </div>
+
+      <div class="flex-grow-1">
+        <h4 class="mb-1">{{ aluno.nome }}</h4>
+        <div class="text-muted small mb-3">
+          {% if aluno.email %}<i class="bi bi-envelope me-1"></i>{{ aluno.email }}{% endif %}
+        </div>
+
+        {% if situacao == 'aprovado' %}
+          <span class="badge badge-aprovado px-3 py-2"><i class="bi bi-check-circle me-1"></i>Média acima do mínimo ({{ media_minima|floatformat:1 }})</span>
+        {% elif situacao == 'reprovado' %}
+          <span class="badge badge-reprovado px-3 py-2"><i class="bi bi-x-circle me-1"></i>Média abaixo do mínimo ({{ media_minima|floatformat:1 }})</span>
+        {% else %}
+          <span class="badge badge-matriculado px-3 py-2"><i class="bi bi-hourglass-split me-1"></i>Sem média: faltam notas lançadas</span>
+        {% endif %}
+
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <div class="mini-stat"><div class="n">{{ total }}</div><div class="l">Disciplinas</div></div>
+          <div class="mini-stat"><div class="n text-success">{{ aprovadas }}</div><div class="l">Aprovadas</div></div>
+          <div class="mini-stat"><div class="n text-danger">{{ reprovadas }}</div><div class="l">Reprovadas</div></div>
+          <div class="mini-stat"><div class="n text-primary">{{ em_curso }}</div><div class="l">Em andamento</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><i class="bi bi-journal-text me-2 text-primary"></i>Boletim por disciplina</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Disciplina</th><th>Professor</th><th class="text-center">Nota 1</th><th class="text-center">Nota 2</th><th class="text-center">Nota 3</th><th style="min-width:150px">Média</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for m in boletim %}
+        <tr>
+          <td><strong>{{ m.fk_id_disciplina.nome_disciplina }}</strong></td>
+          <td>{{ m.fk_id_disciplina.fk_id_professor.nome }}</td>
+          <td class="text-center">{% if m.nota1 is not None %}<span class="nota-pill">{{ m.nota1|floatformat:1 }}</span>{% else %}<span class="nota-pill vazia">—</span>{% endif %}</td>
+          <td class="text-center">{% if m.nota2 is not None %}<span class="nota-pill">{{ m.nota2|floatformat:1 }}</span>{% else %}<span class="nota-pill vazia">—</span>{% endif %}</td>
+          <td class="text-center">{% if m.nota3 is not None %}<span class="nota-pill">{{ m.nota3|floatformat:1 }}</span>{% else %}<span class="nota-pill vazia">—</span>{% endif %}</td>
+          <td>
+            {% if m.media is not None %}
+            <div class="d-flex align-items-center gap-2">
+              <strong style="width:38px">{{ m.media|floatformat:2 }}</strong>
+              <div class="barra flex-grow-1 {% if m.status == 'aprovado' %}ok{% elif m.status == 'reprovado' %}bad{% endif %}"><span style="width: {% widthratio m.media 10 100 %}%"></span></div>
+            </div>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td>
+            {% if m.status == 'aprovado' %}<span class="badge badge-aprovado px-2">Aprovado</span>
+            {% elif m.status == 'reprovado' %}<span class="badge badge-reprovado px-2">Reprovado</span>
+            {% else %}<span class="badge badge-matriculado px-2">Matriculado</span>{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Este aluno ainda não está matriculado em nenhuma disciplina.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+<div class="card">
+  <div class="card-body text-center text-muted py-5">
+    <i class="bi bi-person-lines-fill" style="font-size:2.5rem"></i>
+    <p class="mt-2 mb-0">Selecione um aluno acima para ver a média geral e o boletim completo.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'core/base.html' %}
+{% block title %}Média do aluno — Gerente de Notas{% endblock %}
+{% block content %}
+<div class="card p-4">
+  <h2>Média do aluno</h2>
+  <p><strong>Aluno:</strong> {{ aluno.nome }}</p>
+  <p><strong>Média geral:</strong> {{ media|floatformat:2 }}</p>
+  <a href="{% url 'relatorios' %}" class="btn btn-secondary">Voltar</a>
+</div>
+{% endblock %}

@@ -66,55 +66,44 @@ class DisciplinaForm(forms.ModelForm):
         }
 
 
-class MatriculaForm(forms.ModelForm):
-    data_matricula = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        label='Data da Matrícula'
+class MatriculaForm(forms.Form):
+    """Matrícula = escolher aluno + disciplina (feita pela procedure realizar_matricula)."""
+    aluno = forms.ModelChoiceField(
+        queryset=Aluno.objects.all(),
+        label='Aluno',
+        empty_label='Selecione um aluno',
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
-
-    class Meta:
-        model = Matricula
-        fields = ['fk_id_aluno', 'fk_id_disciplina', 'data_matricula', 'nota1', 'nota2', 'nota3']
-        labels = {
-            'fk_id_aluno': 'Aluno',
-            'fk_id_disciplina': 'Disciplina',
-            'nota1': 'Nota 1 (0 a 10)',
-            'nota2': 'Nota 2 (0 a 10)',
-            'nota3': 'Nota 3 (0 a 10)',
-        }
-        widgets = {
-            'fk_id_aluno': forms.Select(attrs={'class': 'form-select'}),
-            'fk_id_disciplina': forms.Select(attrs={'class': 'form-select'}),
-            'nota1': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': '0', 'max': '10', 'placeholder': '0.0'}),
-            'nota2': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': '0', 'max': '10', 'placeholder': '0.0'}),
-            'nota3': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': '0', 'max': '10', 'placeholder': '0.0'}),
-        }
+    disciplina = forms.ModelChoiceField(
+        queryset=Disciplina.objects.all(),
+        label='Disciplina',
+        empty_label='Selecione uma disciplina',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
 
 
 class MatriculaNotaForm(forms.ModelForm):
-    """Formulário para lançar as 3 notas — média e status são calculados automaticamente."""
-
     class Meta:
         model = Matricula
         fields = ['nota1', 'nota2', 'nota3']
-        labels = {
-            'nota1': 'Nota 1 (0 a 10)',
-            'nota2': 'Nota 2 (0 a 10)',
-            'nota3': 'Nota 3 (0 a 10)',
-        }
+
         widgets = {
             'nota1': forms.NumberInput(attrs={
-                'class': 'form-control', 'step': '0.1', 'min': '0', 'max': '10', 'placeholder': '0.0'
+                'class': 'form-control',
+                'step': '0.1',
+                'min': '0',
+                'max': '10'
             }),
             'nota2': forms.NumberInput(attrs={
-                'class': 'form-control', 'step': '0.1', 'min': '0', 'max': '10', 'placeholder': '0.0'
+                'class': 'form-control',
+                'step': '0.1',
+                'min': '0',
+                'max': '10'
             }),
             'nota3': forms.NumberInput(attrs={
-                'class': 'form-control', 'step': '0.1', 'min': '0', 'max': '10', 'placeholder': '0.0'
+                'class': 'form-control',
+                'step': '0.1',
+                'min': '0',
+                'max': '10'
             }),
-        }
-        help_texts = {
-            'nota1': 'Primeira avaliação',
-            'nota2': 'Segunda avaliação',
-            'nota3': 'Terceira avaliação',
         }

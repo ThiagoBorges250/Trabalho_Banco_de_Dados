@@ -1,0 +1,44 @@
+{% extends 'core/base.html' %}
+{% block title %}Relatório (View) — Gerente de Notas{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <h1 class="page-title"><i class="bi bi-table me-2"></i>Relatório de Notas (View)</h1>
+</div>
+
+<form method="get" class="d-flex gap-2 mb-3">
+  <select name="disciplina" class="form-select" style="max-width:320px">
+    <option value="">Todas as disciplinas</option>
+    {% for id, nome in disciplinas %}
+    <option value="{{ id }}" {% if disciplina_id == id|stringformat:"s" %}selected{% endif %}>{{ nome }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary">Filtrar</button>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Aluno</th><th>Disciplina</th><th>Professor</th><th>Nota 1</th><th>Nota 2</th><th>Nota 3</th><th>Status</th><th>Data</th></tr>
+      </thead>
+      <tbody>
+        {% for r in resultados %}
+        <tr>
+          <td>{{ r.1 }}</td>
+          <td>{{ r.2 }}</td>
+          <td>{{ r.3 }}</td>
+          <td>{{ r.4|default_if_none:"—" }}</td>
+          <td>{{ r.5|default_if_none:"—" }}</td>
+          <td>{{ r.6|default_if_none:"—" }}</td>
+          <td>{{ r.7|default_if_none:"—" }}</td>
+          <td>{{ r.8|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">Nenhum resultado encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

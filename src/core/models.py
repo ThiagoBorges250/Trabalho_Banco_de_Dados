@@ -12,6 +12,7 @@ class Aluno(models.Model):
 
     class Meta:
         db_table = 'alunos'
+        managed = False
         ordering = ['nome']
 
     def __str__(self):
@@ -29,6 +30,7 @@ class Professor(models.Model):
 
     class Meta:
         db_table = 'professores'
+        managed = False
         ordering = ['nome']
 
     def __str__(self):
@@ -48,6 +50,7 @@ class Disciplina(models.Model):
 
     class Meta:
         db_table = 'disciplinas'
+        managed = False
         ordering = ['nome_disciplina']
 
     def __str__(self):
@@ -58,85 +61,63 @@ STATUS_CHOICES = [
     ('aprovado', 'Aprovado'),
     ('reprovado', 'Reprovado'),
     ('matriculado', 'Matriculado'),
+    ('cancelado', 'Cancelado'),
 ]
 
 MEDIA_MINIMA = 7.0
 
 
 class Matricula(models.Model):
+    """
+    Tabela `matricula` criada pelo script SQL.
+    A matrícula é criada pela procedure `realizar_matricula`;
+    as notas são lançadas pela aba Notas.
+    """
     id_matricula = models.AutoField(primary_key=True)
+
     fk_id_aluno = models.ForeignKey(
-        Aluno,
-        on_delete=models.CASCADE,
-        db_column='fk_id_aluno',
-        related_name='matriculas'
+        Aluno, on_delete=models.CASCADE,
+        db_column='fk_id_aluno', related_name='matriculas'
     )
     fk_id_disciplina = models.ForeignKey(
-        Disciplina,
-        on_delete=models.CASCADE,
-        db_column='fk_id_disciplina',
-        related_name='matriculas'
+        Disciplina, on_delete=models.CASCADE,
+        db_column='fk_id_disciplina', related_name='matriculas'
     )
     data_matricula = models.DateField()
 
-    # Três notas individuais
-    nota1 = models.FloatField(
-        null=True, blank=True,
+    nota1 = models.FloatField(null=True, blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
-        verbose_name='Nota 1'
-    )
-    nota2 = models.FloatField(
-        null=True, blank=True,
+        verbose_name='Nota 1')
+    nota2 = models.FloatField(null=True, blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
-        verbose_name='Nota 2'
-    )
-    nota3 = models.FloatField(
-        null=True, blank=True,
+        verbose_name='Nota 2')
+    nota3 = models.FloatField(null=True, blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
-        verbose_name='Nota 3'
-    )
+        verbose_name='Nota 3')
 
-    # Média calculada automaticamente (campo `nota` original preservado)
-    nota = models.FloatField(
-        null=True, blank=True,
-        validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
-        verbose_name='Média'
-    )
-    status = models.CharField(
-        max_length=50,
-        choices=STATUS_CHOICES,
-        null=True, blank=True
-    )
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES,
+                              null=True, blank=True)
 
     class Meta:
         db_table = 'matricula'
+        managed = False
         unique_together = ('fk_id_aluno', 'fk_id_disciplina')
         ordering = ['-data_matricula']
 
-    def calcular_media(self):
-        """Retorna a média das notas preenchidas, ou None se nenhuma foi informada."""
-        valores = [n for n in (self.nota1, self.nota2, self.nota3) if n is not None]
-        if not valores:
-            return None
-        return round(sum(valores) / len(valores), 2)
-
-    def calcular_status(self, media):
-        """Retorna o status com base na média (todas as 3 notas preenchidas)."""
-        todas_preenchidas = all(
-            n is not None for n in (self.nota1, self.nota2, self.nota3)
-        )
-        if not todas_preenchidas:
-            return 'matriculado'
-        return 'aprovado' if media >= MEDIA_MINIMA else 'reprovado'
+    @property
+    def media(self):
+        if self.nota1 is not None and self.nota2 is not None and self.nota3 is not None:
+            return round((self.nota1 + self.nota2 + self.nota3) / 3, 2)
+        return None
 
     def save(self, *args, **kwargs):
-        media = self.calcular_media()
-        self.nota = media
-        if media is not None:
-            self.status = self.calcular_status(media)
-        else:
-            self.status = 'matriculado'
+        if self.status != 'cancelado':
+            if self.nota1 is None and self.nota2 is None and self.nota3 is None:
+                self.status = 'matriculado'
+            elif self.nota1 is not None and self.nota2 is not None and self.nota3 is not None:
+                self.status = 'aprovado' if self.media >= MEDIA_MINIMA else 'reprovado'
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.fk_id_aluno} — {self.fk_id_disciplina}"
+

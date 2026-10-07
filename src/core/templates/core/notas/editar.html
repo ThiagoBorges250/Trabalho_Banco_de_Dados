@@ -1,9 +1,9 @@
 {% extends 'core/base.html' %}
-{% block title %}Lançar Notas — Gerente de Notas{% endblock %}
+{% block title %}Lançar Nota — Gerente de Notas{% endblock %}
 
 {% block content %}
 <div class="topbar">
-  <h1 class="page-title"><i class="bi bi-pencil-square me-2"></i>Lançar Notas</h1>
+  <h1 class="page-title"><i class="bi bi-pencil-square me-2"></i>Lançar Nota</h1>
   <a href="{% url 'notas_list' %}" class="btn btn-outline-secondary btn-sm">
     <i class="bi bi-arrow-left me-1"></i>Voltar para Notas
   </a>
@@ -20,22 +20,22 @@
   </div>
 
   <div class="card-body p-4">
-    <!-- Preview da média atual -->
+    <!-- Nota atual -->
     {% if mat.nota != None %}
     <div class="alert py-2 mb-3" style="font-size:.875rem;
       {% if mat.nota >= 7 %}background:#d1fae5;color:#065f46;border:1px solid #6ee7b7
       {% elif mat.nota >= 5 %}background:#fef9c3;color:#713f12;border:1px solid #fde68a
       {% else %}background:#fee2e2;color:#991b1b;border:1px solid #fca5a5{% endif %}">
       <i class="bi bi-calculator me-1"></i>
-      Média atual: <strong>{{ mat.nota }}</strong> —
+      Nota atual: <strong>{{ mat.nota }}</strong> —
       {% if mat.nota >= 7 %}Aprovado{% elif mat.nota >= 5 %}Atenção{% else %}Reprovado{% endif %}
     </div>
     {% endif %}
 
     <div class="alert alert-light border py-2 mb-3" style="font-size:.8rem">
       <i class="bi bi-info-circle me-1"></i>
-      Média &ge; <strong>7,0</strong> = Aprovado &nbsp;|&nbsp; &lt; 7,0 = Reprovado.<br>
-      Deixe campos em branco para status <em>Matriculado</em>.
+      Nota &ge; <strong>7,0</strong> = Aprovado &nbsp;|&nbsp; &lt; 7,0 = Reprovado.<br>
+      Deixe em branco para status <em>Matriculado</em>.
     </div>
 
     <form method="post" novalidate>

@@ -23,7 +23,7 @@
           <td>{{ m.fk_id_aluno.nome }}</td>
           <td>{{ m.fk_id_disciplina.nome_disciplina }}</td>
           <td>{{ m.fk_id_disciplina.fk_id_professor.nome }}</td>
-          <td>{% if m.nota is not None %}<strong>{{ m.nota }}</strong>{% else %}—{% endif %}</td>
+          <td>{% if m.media is not None %}<strong>{{ m.media }}</strong>{% else %}—{% endif %}</td>
           <td>
             {% if m.status == 'aprovado' %}<span class="badge badge-aprovado px-2">Aprovado</span>
             {% elif m.status == 'reprovado' %}<span class="badge badge-reprovado px-2">Reprovado</span>
@@ -56,7 +56,7 @@
         <tr>
           <td>{{ m.fk_id_aluno.nome }}</td>
           <td>{{ m.fk_id_disciplina.nome_disciplina }}</td>
-          <td><strong class="text-success">{{ m.nota }}</strong></td>
+          <td><strong class="text-success">{{ m.media }}</strong></td>
         </tr>
         {% empty %}
         <tr><td colspan="3" class="text-center text-muted py-3">Nenhum aluno aprovado.</td></tr>
@@ -83,7 +83,7 @@
         <tr>
           <td>{{ m.fk_id_aluno.nome }}</td>
           <td>{{ m.fk_id_disciplina.nome_disciplina }}</td>
-          <td><strong class="text-danger">{{ m.nota }}</strong></td>
+          <td><strong class="text-danger">{{ m.media }}</strong></td>
         </tr>
         {% empty %}
         <tr><td colspan="3" class="text-center text-muted py-3">Nenhum aluno reprovado.</td></tr>

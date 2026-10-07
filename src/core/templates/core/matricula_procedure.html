@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Realizar Matrícula</title>
+</head>
+
+<body>
+
+<h1>Realizar Matrícula</h1>
+
+{% if messages %}
+
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+{% endif %}
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    <label>Aluno:</label>
+
+    <select name="id_aluno" required>
+
+        <option value="">Selecione um aluno</option>
+
+        {% for aluno in alunos %}
+            <option value="{{ aluno.id_aluno }}">
+                {{ aluno.nome }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <label>Disciplina:</label>
+
+    <select name="id_disciplina" required>
+
+        <option value="">Selecione uma disciplina</option>
+
+        {% for disciplina in disciplinas %}
+            <option value="{{ disciplina.id_disciplina }}">
+                {{ disciplina.nome_disciplina }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+        Realizar Matrícula
+    </button>
+
+</form>
+
+</body>
+</html>

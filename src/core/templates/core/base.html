@@ -142,6 +142,12 @@
   <a href="{% url 'relatorios' %}" class="nav-link {% if 'relatorios' in request.resolver_match.url_name %}active{% endif %}">
     <i class="bi bi-bar-chart"></i> Relatórios
   </a>
+  <a href="{% url 'relatorio_view' %}" class="nav-link {% if request.resolver_match.url_name == 'relatorio_view' %}active{% endif %}">
+    <i class="bi bi-table"></i> Relatório (View)
+  </a>
+  <a href="{% url 'media_aluno' %}" class="nav-link {% if request.resolver_match.url_name == 'media_aluno' %}active{% endif %}">
+    <i class="bi bi-calculator"></i> Média do aluno
+  </a>
 
   <div class="sidebar-footer">
     <div class="text-muted" style="font-size:.8rem; color:#8b9ab0 !important;">
