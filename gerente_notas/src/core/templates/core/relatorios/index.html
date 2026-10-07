@@ -1,0 +1,123 @@
+{% extends 'core/base.html' %}
+{% block title %}Relatórios — Gerente de Notas{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <h1 class="page-title"><i class="bi bi-bar-chart me-2"></i>Relatórios</h1>
+</div>
+
+<!-- Relatório 1: Todos os alunos com nota e professor (INNER JOIN triplo) -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-table me-2 text-primary"></i>Alunos × Disciplina × Professor × Nota
+    <span class="badge bg-light text-dark border ms-2 small font-monospace">INNER JOIN</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Aluno</th><th>Disciplina</th><th>Professor</th><th>Nota</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for m in todas %}
+        <tr>
+          <td>{{ m.fk_id_aluno.nome }}</td>
+          <td>{{ m.fk_id_disciplina.nome_disciplina }}</td>
+          <td>{{ m.fk_id_disciplina.fk_id_professor.nome }}</td>
+          <td>{% if m.nota is not None %}<strong>{{ m.nota }}</strong>{% else %}—{% endif %}</td>
+          <td>
+            {% if m.status == 'aprovado' %}<span class="badge badge-aprovado px-2">Aprovado</span>
+            {% elif m.status == 'reprovado' %}<span class="badge badge-reprovado px-2">Reprovado</span>
+            {% elif m.status == 'matriculado' %}<span class="badge badge-matriculado px-2">Matriculado</span>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-3">Sem dados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer small text-muted py-2">{{ todas|length }} registro(s)</div>
+</div>
+
+<!-- Relatório 2: Aprovados -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-check-circle-fill me-2 text-success"></i>Alunos Aprovados
+    <span class="badge bg-light text-dark border ms-2 small font-monospace">WHERE status = 'aprovado'</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Aluno</th><th>Disciplina</th><th>Nota</th></tr>
+      </thead>
+      <tbody>
+        {% for m in aprovados %}
+        <tr>
+          <td>{{ m.fk_id_aluno.nome }}</td>
+          <td>{{ m.fk_id_disciplina.nome_disciplina }}</td>
+          <td><strong class="text-success">{{ m.nota }}</strong></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-center text-muted py-3">Nenhum aluno aprovado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer small text-muted py-2">{{ aprovados|length }} registro(s)</div>
+</div>
+
+<!-- Relatório 3: Reprovados -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-x-circle-fill me-2 text-danger"></i>Alunos Reprovados
+    <span class="badge bg-light text-dark border ms-2 small font-monospace">WHERE status = 'reprovado'</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Aluno</th><th>Disciplina</th><th>Nota</th></tr>
+      </thead>
+      <tbody>
+        {% for m in reprovados %}
+        <tr>
+          <td>{{ m.fk_id_aluno.nome }}</td>
+          <td>{{ m.fk_id_disciplina.nome_disciplina }}</td>
+          <td><strong class="text-danger">{{ m.nota }}</strong></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-center text-muted py-3">Nenhum aluno reprovado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer small text-muted py-2">{{ reprovados|length }} registro(s)</div>
+</div>
+
+<!-- Relatório 4: Alunos sem matrícula (LEFT JOIN) -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-person-x me-2 text-warning"></i>Alunos sem Matrícula
+    <span class="badge bg-light text-dark border ms-2 small font-monospace">LEFT JOIN / IS NULL</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Nome</th><th>CPF</th><th>E-mail</th></tr>
+      </thead>
+      <tbody>
+        {% for a in alunos_sem_matricula %}
+        <tr>
+          <td>{{ a.nome }}</td>
+          <td class="font-monospace small">{{ a.cpf }}</td>
+          <td>{{ a.email|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-center text-muted py-3">Todos os alunos possuem matrícula.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer small text-muted py-2">{{ alunos_sem_matricula|length }} aluno(s) sem matrícula</div>
+</div>
+{% endblock %}

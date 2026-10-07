@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Notas</title>
+</head>
+
+<body>
+
+<h1>Relatório de Notas</h1>
+
+<form method="GET">
+
+    <label>Disciplina:</label>
+
+    <select name="disciplina">
+
+        <option value="">Todas</option>
+
+        {% for id, nome in disciplinas %}
+            <option value="{{ id }}"
+                {% if disciplina_id == id|stringformat:"s" %}
+                    selected
+                {% endif %}
+            >
+                {{ nome }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+    <button type="submit">Filtrar</button>
+
+</form>
+
+<br>
+
+<table border="1">
+
+    <tr>
+        <th>Aluno</th>
+        <th>Disciplina</th>
+        <th>Professor</th>
+        <th>Nota</th>
+        <th>Status</th>
+        <th>Data</th>
+    </tr>
+
+    {% for item in resultados %}
+
+    <tr>
+        <td>{{ item.1 }}</td>
+        <td>{{ item.2 }}</td>
+        <td>{{ item.3 }}</td>
+        <td>{{ item.4 }}</td>
+        <td>{{ item.5 }}</td>
+        <td>{{ item.6 }}</td>
+    </tr>
+
+    {% empty %}
+
+    <tr>
+        <td colspan="6">
+            Nenhum resultado encontrado.
+        </td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+</body>
+</html>

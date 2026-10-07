@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login — Gerente de Notas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #1a1f2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.35);
+    }
+    .login-logo {
+      font-size: 2.5rem;
+      color: #3b82f6;
+      margin-bottom: .5rem;
+    }
+    .login-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1a1f2e;
+    }
+    .login-sub { color: #6b7a8d; font-size: .85rem; }
+    .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 .2rem rgba(59,130,246,.2); }
+    .btn-login {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: .65rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: .95rem;
+    }
+    .btn-login:hover { background: #2563eb; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="text-center mb-3">
+      <div class="login-logo"><i class="bi bi-mortarboard-fill"></i></div>
+      <div class="login-title">Gerente de Notas</div>
+      <div class="login-sub">Sistema de Controle Acadêmico</div>
+    </div>
+
+    {% if form.errors %}
+      <div class="alert alert-danger py-2 small">Usuário ou senha inválidos.</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Usuário</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person"></i></span>
+          <input type="text" name="username" class="form-control" placeholder="seu usuário" autofocus required>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Senha</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-login">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+      </button>
+    </form>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
