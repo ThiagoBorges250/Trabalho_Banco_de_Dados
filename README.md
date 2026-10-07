@@ -123,10 +123,10 @@ Acesse http://127.0.0.1:8000 e entre com o usuário criado.
 
 ## 🌐 Acesso online e vídeo
 
-* **Sistema (Render):** https://trabalho-banco-de-dados-wjy2.onrender.com/login/?next=/
+* **Sistema (Render):** https://gerente-notas.onrender.com/
   Usuário de teste: `Thiago` / senha `1234`. O plano gratuito pode demorar a carregar no primeiro acesso; use em computador.
 * **Vídeo explicativo 1 (Joins):** https://drive.google.com/uc?id=1eb8qdmASeKHIpgChyErokfuOVIvIduei&export=download
-* **Vídeo explicativo 2 (View, Function e Procedure):**
+* **Vídeo explicativo 2 (View, Function e Procedure):** https://drive.google.com/uc?id=1mN1ZJNC0kcW2UtfQB1gtx-7VSBX1ZtfH&export=download
 
 ---
 
