@@ -1,0 +1,13 @@
+{% if cache_info %}
+<div class="alert {% if cache_info.origem == 'redis' %}alert-success{% else %}alert-warning{% endif %} py-2 px-3 d-flex flex-wrap align-items-center gap-2" style="font-size:.85rem;">
+  {% if cache_info.origem == 'redis' %}
+    <i class="bi bi-lightning-charge-fill"></i>
+    <strong>Redis (cache HIT)</strong> — dados lidos do Redis em <strong>{{ cache_info.ms }} ms</strong>
+  {% else %}
+    <i class="bi bi-database"></i>
+    <strong>Supabase (cache MISS)</strong> — consulta feita no banco em <strong>{{ cache_info.ms }} ms</strong>
+    {% if cache_info.redis_ok %}e guardada no Redis por {{ cache_info.ttl }}s{% else %}(Redis indisponível){% endif %}
+  {% endif %}
+  <code class="ms-auto small">{{ cache_info.chave }}</code>
+</div>
+{% endif %}

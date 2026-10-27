@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.db import connection, DatabaseError
 from django.urls import reverse
 
+from . import cache_utils
 from .models import Aluno, Professor, Disciplina, Matricula, MEDIA_MINIMA
 
 from .forms import (
@@ -18,9 +19,9 @@ from .forms import (
 
 # ─── DASHBOARD ───────────────────────────────────────────────────────────────
 
-@login_required
-def dashboard(request):
-    ctx = {
+def _dados_dashboard():
+    """7 consultas COUNT no Supabase (o que o Redis evita repetir)."""
+    return {
         'total_alunos': Aluno.objects.count(),
         'total_professores': Professor.objects.count(),
         'total_disciplinas': Disciplina.objects.count(),
@@ -29,6 +30,12 @@ def dashboard(request):
         'reprovados': Matricula.objects.filter(status='reprovado').count(),
         'matriculados': Matricula.objects.filter(status='matriculado').count(),
     }
+
+
+@login_required
+def dashboard(request):
+    ctx, cache_info = cache_utils.obter('dashboard', _dados_dashboard)
+    ctx = dict(ctx, cache_info=cache_info)
 
     return render(request, 'core/dashboard.html', ctx)
 
@@ -462,6 +469,9 @@ def matricula_create(request):
 
         else:
 
+            # A procedure grava via SQL puro (sem signals do Django)
+            cache_utils.invalidar()
+
             messages.success(
                 request,
                 'Matrícula realizada com sucesso.'
@@ -645,14 +655,8 @@ def relatorios(request):
 
 # ─── VIEW DO POSTGRESQL ──────────────────────────────────────────────────────
 
-@login_required
-def relatorio_view(request):
-
-    disciplina_id = request.GET.get(
-        'disciplina',
-        ''
-    )
-
+def _dados_relatorio_view(disciplina_id):
+    """Consulta a View vw_relatorio_alunos no Supabase."""
     with connection.cursor() as cursor:
 
         # Lista as disciplinas existentes na View
@@ -709,18 +713,60 @@ def relatorio_view(request):
 
         resultados = cursor.fetchall()
 
+    return {'resultados': resultados, 'disciplinas': disciplinas}
+
+
+@login_required
+def relatorio_view(request):
+
+    disciplina_id = request.GET.get(
+        'disciplina',
+        ''
+    )
+
+    dados, cache_info = cache_utils.obter(
+        f'relatorio_view:{disciplina_id or "todas"}',
+        lambda: _dados_relatorio_view(disciplina_id)
+    )
+
     return render(
         request,
         'core/relatorios/view.html',
         {
-            'resultados': resultados,
-            'disciplinas': disciplinas,
-            'disciplina_id': disciplina_id
+            'resultados': dados['resultados'],
+            'disciplinas': dados['disciplinas'],
+            'disciplina_id': disciplina_id,
+            'cache_info': cache_info
         }
     )
 
 
 # ─── FUNCTION DO POSTGRESQL ──────────────────────────────────────────────────
+
+def _dados_media(aluno):
+    """Function calcular_media_aluno + boletim, direto no Supabase."""
+    media = None
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT calcular_media_aluno(%s);",
+            [aluno.pk]
+        )
+        resultado = cursor.fetchone()
+        if resultado and resultado[0] is not None:
+            media = float(resultado[0])
+
+    boletim = list(
+        Matricula.objects.select_related(
+            'fk_id_disciplina',
+            'fk_id_disciplina__fk_id_professor'
+        ).filter(
+            fk_id_aluno=aluno
+        ).exclude(
+            status='cancelado'
+        ).order_by('fk_id_disciplina__nome_disciplina')
+    )
+    return {'media': media, 'boletim': boletim}
+
 
 @login_required
 def media_aluno(request):
@@ -729,6 +775,7 @@ def media_aluno(request):
 
     media = None
     aluno = None
+    cache_info = None
     boletim = []
     aluno_selecionado = request.POST.get('id_aluno') or request.GET.get('aluno')
 
@@ -737,26 +784,13 @@ def media_aluno(request):
         aluno = Aluno.objects.filter(pk=aluno_selecionado).first()
 
         if aluno:
-            # Executa a Function calcular_media_aluno do PostgreSQL
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT calcular_media_aluno(%s);",
-                    [aluno.pk]
-                )
-                resultado = cursor.fetchone()
-                if resultado and resultado[0] is not None:
-                    media = float(resultado[0])
-
-            boletim = list(
-                Matricula.objects.select_related(
-                    'fk_id_disciplina',
-                    'fk_id_disciplina__fk_id_professor'
-                ).filter(
-                    fk_id_aluno=aluno
-                ).exclude(
-                    status='cancelado'
-                ).order_by('fk_id_disciplina__nome_disciplina')
+            # Function do PostgreSQL + boletim, guardados no Redis por aluno
+            dados, cache_info = cache_utils.obter(
+                f'media_aluno:{aluno.pk}',
+                lambda: _dados_media(aluno)
             )
+            media = dados['media']
+            boletim = dados['boletim']
 
     total = len(boletim)
     aprovadas = sum(1 for m in boletim if m.status == 'aprovado')
@@ -786,5 +820,83 @@ def media_aluno(request):
             'aprovadas': aprovadas,
             'reprovadas': reprovadas,
             'em_curso': em_curso,
+            'cache_info': cache_info,
         }
     )
+
+
+
+# ─── PAINEL DO REDIS ─────────────────────────────────────────────────────────
+
+@login_required
+def redis_painel(request):
+    """Tela de demonstracao: mostra o que esta guardado no Redis."""
+    from django.conf import settings
+
+    ctx = {
+        'redis_configurado': bool(settings.REDIS_URL),
+        'backend': settings.CACHES['default']['BACKEND'],
+        'conectado': False,
+        'chaves': [],
+        'benchmark': None,
+    }
+
+    if ctx['redis_configurado']:
+        from django_redis import get_redis_connection
+
+        try:
+            r = get_redis_connection('default')
+            r.ping()
+            ctx['conectado'] = True
+        except Exception as erro:
+            ctx['erro'] = f'{type(erro).__name__}: {erro}'
+            r = None
+    else:
+        r = None
+
+    if request.method == 'POST' and r is not None:
+        acao = request.POST.get('acao')
+
+        if acao == 'limpar':
+            apagar = list(r.scan_iter(match='*:dados:*'))
+            if apagar:
+                r.delete(*apagar)
+            messages.success(
+                request,
+                f'Cache limpo: {len(apagar)} chave(s) removida(s) do Redis.'
+            )
+            return redirect('redis_painel')
+
+        if acao == 'benchmark':
+            cache_utils.invalidar()
+            _, primeira = cache_utils.obter(
+                'relatorio_view:todas',
+                lambda: _dados_relatorio_view('')
+            )
+            _, segunda = cache_utils.obter(
+                'relatorio_view:todas',
+                lambda: _dados_relatorio_view('')
+            )
+            ctx['benchmark'] = {'supabase': primeira, 'redis': segunda}
+
+    if r is not None and ctx['conectado']:
+        for chave in sorted(r.scan_iter(match='*gerente_notas*')):
+            nome = chave.decode() if isinstance(chave, bytes) else chave
+            ttl = r.ttl(chave)
+            if 'django.contrib.sessions' in nome:
+                uso = 'Sessão de login'
+            elif ':dados:' in nome:
+                uso = 'Cache de consulta'
+            else:
+                uso = 'Controle do cache'
+            ctx['chaves'].append({
+                'nome': nome,
+                'uso': uso,
+                'ttl': 'sem expiração' if ttl == -1 else f'{ttl}s',
+            })
+
+    ctx['stats'] = cache_utils.estatisticas()
+    total = ctx['stats']['hits'] + ctx['stats']['misses']
+    ctx['taxa'] = round(100 * ctx['stats']['hits'] / total) if total else 0
+
+    return render(request, 'core/redis/painel.html', ctx)

@@ -80,7 +80,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=_DATABASE_URL or 'postgresql://postgres:root@localhost:5432/Gerente_Notas',
         conn_max_age=600,
-        ssl_require=bool(_DATABASE_URL),
+        ssl_require=bool(_DATABASE_URL) and "localhost" not in _DATABASE_URL,
     )
 }
 

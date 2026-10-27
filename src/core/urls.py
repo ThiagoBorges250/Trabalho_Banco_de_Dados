@@ -148,6 +148,14 @@ urlpatterns = [
     ),
 
 
+    # Painel do Redis (demonstracao)
+    path(
+        'redis/',
+        views.redis_painel,
+        name='redis_painel'
+    ),
+
+
     # Django Admin
     path(
         'admin/',

@@ -8,7 +8,7 @@
 | **Disciplina** | Banco de Dados |
 | **Professor** | Anderson Costa |
 | **Instituição** | UniFSA – Centro Universitário Santo Agostinho |
-| **Trabalho** | Trabalho Avaliativo – Projeto de Banco de Dados (evolução do CRUD anterior) |
+| **Trabalho** | Trabalho Avaliativo – Projeto de Banco de Dados (evolução do CRUD anterior – Opção 1) |
 
 ---
 
@@ -78,6 +78,7 @@ Trabalho_Banco_de_Dados/
 │   │   ├── management/commands/
 │   │   │   ├── configurar_banco.py   # cria tabelas, View, Function, Procedures e dados iniciais
 │   │   │   └── criar_usuario.py      # cria o usuário de login
+│   │   ├── cache_utils.py            # cache com Redis (HIT/MISS, invalidação)
 │   │   └── supabase_client.py        # cliente da API do Supabase (opcional)
 │   ├── gerente_notas/settings.py     # configuração (Supabase, Redis)
 │   ├── teste_conexoes.py             # testa Supabase e Redis
@@ -98,9 +99,45 @@ Trabalho_Banco_de_Dados/
 |---|---|---|
 | **Supabase** (PostgreSQL) | Banco de dados principal: tabelas, View, Function e Procedures | `DATABASE_URL` |
 | **Supabase API** (opcional) | Acesso à API do Supabase por `core/supabase_client.py` | `SUPABASE_URL`, `SUPABASE_KEY` |
-| **Redis** | Cache e armazenamento das **sessões de login** | `REDIS_URL` |
+| **Redis** | **Cache de consultas** (Dashboard, Relatório da View, Média do aluno) e **sessões de login** | `REDIS_URL` |
 
 Se `REDIS_URL` estiver vazia, o sistema usa cache em memória e continua funcionando. Se `DATABASE_URL` estiver vazia, usa o PostgreSQL local (`postgresql://postgres:root@localhost:5432/Gerente_Notas`).
+
+### Como o Supabase é usado
+
+O Supabase hospeda o **PostgreSQL** do sistema. Todas as tabelas (`alunos`, `professores`, `disciplinas`, `matricula`), a **View** `vw_relatorio_alunos`, a **Function** `calcular_media_aluno` e as **Procedures** `realizar_matricula` e `cancelar_matricula` ficam nele. A aplicação Django conecta pela `DATABASE_URL` (SSL obrigatório) e usa os dados em todas as telas: cadastros (CRUD), matrículas, lançamento de notas, relatórios, boletim e média do aluno. O Supabase é a fonte da verdade: o Redis nunca guarda nada que não esteja nele.
+
+### Como o Redis é usado (e por que)
+
+**Problema:** o banco fica na internet (Supabase). Telas como o **Dashboard** (7 consultas `COUNT`), o **Relatório (View)** (4 `JOIN`s) e a **Média do aluno** (Function + boletim) repetem as mesmas consultas a cada acesso, e cada ida ao banco custa tempo e consome conexões.
+
+**Solução:** o Redis foi usado de duas formas:
+
+| Uso | Onde no código | O que faz |
+|---|---|---|
+| **Cache de consultas** | `src/core/cache_utils.py`, usado em `dashboard`, `relatorio_view` e `media_aluno` (`src/core/views.py`) | A 1ª leitura vai ao Supabase e o resultado é guardado no Redis por 5 minutos; as seguintes saem do Redis (**cache HIT**) |
+| **Sessões de login** | `SESSION_ENGINE` em `settings.py` | O login fica no Redis em vez da tabela de sessões do banco, evitando uma consulta ao banco por requisição |
+
+**Invalidação (dados sempre corretos):** toda gravação (cadastrar, editar ou excluir aluno, professor, disciplina ou matrícula, lançar notas, ou chamar a procedure `realizar_matricula`) incrementa uma **versão dos dados** no Redis (`dados_versao`). As chaves de cache incluem essa versão (`dados:dashboard:v3`), então depois de qualquer alteração a próxima leitura vai ao Supabase e a tela nunca mostra dado desatualizado.
+
+**Tolerância a falhas:** se o Redis ficar fora do ar, o sistema continua funcionando e consulta o Supabase direto.
+
+**Benefícios:** respostas mais rápidas nas telas pesadas, menos consultas ao Supabase e sessões rápidas e centralizadas.
+
+**Como ver funcionando (demonstração):**
+1. Abra o **Dashboard**, o **Relatório (View)** ou a **Média do aluno**. Um selo no topo mostra a origem: 🟡 *Supabase (cache MISS)* na 1ª vez e 🟢 *Redis (cache HIT)* nas seguintes, com o tempo em ms.
+2. Cadastre um aluno ou uma matrícula e volte ao Dashboard: o selo volta a *MISS* (cache invalidado) e o número já está atualizado.
+3. Abra **Painel Redis** (menu *Infraestrutura*): ele mostra a conexão, acertos e erros de cache, a taxa de acerto, as chaves guardadas com o tempo de expiração (cache e sessões), o botão **Comparar tempos** (Supabase × Redis) e o botão **Limpar cache**.
+
+### Capturas de tela
+
+Adicione as imagens em `docs/img/` e referencie aqui:
+
+```markdown
+![Dashboard com cache do Redis](docs/img/dashboard-redis.png)
+![Painel Redis](docs/img/painel-redis.png)
+![Tabelas no Supabase](docs/img/supabase-tabelas.png)
+```
 
 ### Arquivo `.env`
 
@@ -167,7 +204,7 @@ from django.core.cache import cache
 cache.set("teste", "ok", 60)
 print(cache.get("teste"))        # deve imprimir: ok
 ```
-Para ver as chaves guardadas (sessões de login), use o Redis Insight ou `redis-cli` e liste `KEYS gerente_notas*`.
+Na própria aplicação, use o menu **Painel Redis**. Também dá para ver as chaves pelo Redis Insight ou `redis-cli` (`KEYS gerente_notas*`).
 
 ---
 

@@ -1,0 +1,95 @@
+{% extends 'core/base.html' %}
+{% block title %}Painel Redis — Gerente de Notas{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <h1 class="page-title"><i class="bi bi-lightning-charge me-2"></i>Painel Redis</h1>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small">Conexão</div>
+      {% if conectado %}
+        <div class="fs-5 fw-bold text-success"><i class="bi bi-check-circle-fill"></i> Redis conectado</div>
+      {% elif redis_configurado %}
+        <div class="fs-5 fw-bold text-danger"><i class="bi bi-x-circle-fill"></i> Falha</div>
+        <div class="small text-danger">{{ erro }}</div>
+      {% else %}
+        <div class="fs-5 fw-bold text-warning"><i class="bi bi-exclamation-triangle-fill"></i> REDIS_URL vazia</div>
+      {% endif %}
+      <div class="small text-muted mt-1">{{ backend }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small">Acertos (HIT) — vieram do Redis</div>
+      <div class="fs-3 fw-bold text-success">{{ stats.hits }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small">Erros (MISS) — foram ao Supabase</div>
+      <div class="fs-3 fw-bold text-warning">{{ stats.misses }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small">Taxa de acerto</div>
+      <div class="fs-3 fw-bold">{{ taxa }}%</div>
+      <div class="small text-muted">Versão dos dados: v{{ stats.versao }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title"><i class="bi bi-speedometer"></i> Supabase × Redis</h5>
+    <p class="text-muted small mb-3">
+      Executa o Relatório da View duas vezes: a 1ª no Supabase (banco na internet) e a 2ª lendo do Redis.
+    </p>
+    <form method="post" class="d-inline">{% csrf_token %}
+      <input type="hidden" name="acao" value="benchmark">
+      <button class="btn btn-primary btn-sm" {% if not conectado %}disabled{% endif %}>
+        <i class="bi bi-play-fill"></i> Comparar tempos
+      </button>
+    </form>
+    {% if benchmark %}
+    <div class="row mt-3 g-3">
+      <div class="col-md-6"><div class="alert alert-warning mb-0">
+        <i class="bi bi-database"></i> <strong>Supabase</strong><br>
+        <span class="fs-3 fw-bold">{{ benchmark.supabase.ms }} ms</span>
+      </div></div>
+      <div class="col-md-6"><div class="alert alert-success mb-0">
+        <i class="bi bi-lightning-charge-fill"></i> <strong>Redis</strong><br>
+        <span class="fs-3 fw-bold">{{ benchmark.redis.ms }} ms</span>
+      </div></div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="card-title mb-0"><i class="bi bi-key"></i> Chaves guardadas no Redis ({{ chaves|length }})</h5>
+      <form method="post">{% csrf_token %}
+        <input type="hidden" name="acao" value="limpar">
+        <button class="btn btn-outline-danger btn-sm" {% if not conectado %}disabled{% endif %}>
+          <i class="bi bi-trash"></i> Limpar cache
+        </button>
+      </form>
+    </div>
+    <table class="table table-sm align-middle">
+      <thead><tr><th>Chave</th><th>Para que serve</th><th>Expira em</th></tr></thead>
+      <tbody>
+        {% for c in chaves %}
+        <tr><td><code>{{ c.nome }}</code></td><td>{{ c.uso }}</td><td>{{ c.ttl }}</td></tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-muted">Nenhuma chave ainda. Abra o Dashboard ou o Relatório (View) para criar.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
