@@ -8,7 +8,7 @@
 | **Disciplina** | Banco de Dados |
 | **Professor** | Anderson Costa |
 | **Instituição** | UniFSA – Centro Universitário Santo Agostinho |
-| **Trabalho** | Trabalho Avaliativo – Projeto de Banco de Dados (evolução do CRUD anterior – Opção 1) |
+| **Trabalho** | Trabalho Avaliativo – Projeto de Banco de Dados (evolução do CRUD anterior) |
 
 ---
 
@@ -33,7 +33,8 @@ Funcionalidades principais:
 ```
 Python 3
 Django 4.2
-PostgreSQL
+PostgreSQL (hospedado no Supabase)
+Redis (cache e sessões)
 HTML / CSS / Bootstrap 5
 Git e GitHub
 ```
@@ -42,7 +43,7 @@ Git e GitHub
 
 ## 🗄️ Banco de dados
 
-**SGBD:** PostgreSQL
+**SGBD:** PostgreSQL, hospedado no **Supabase** (em desenvolvimento local também funciona com um PostgreSQL próprio)
 
 **Principais tabelas**
 
@@ -59,9 +60,9 @@ Relacionamentos: um professor ministra várias disciplinas; um aluno se matricul
 
 | Recurso | Script | Finalidade | Onde é usado no sistema |
 |---|---|---|---|
-| **View** `vw_relatorio_alunos` | `database/views/vw_relatorio_alunos.sql` | Junta (4 INNER JOIN) matrícula, aluno, disciplina e professor, entregando notas e status prontos para relatório | Tela **Relatório (View)** – `/relatorio-view/`, com filtro por disciplina |
-| **Function** `calcular_media_aluno(id)` | `database/functions/calcular_media_aluno.sql` | Recebe o id do aluno e retorna a média geral das disciplinas que já têm as 3 notas (`NULL` se não houver) | Tela **Média do aluno** – `/media-aluno/` (média geral e boletim) |
-| **Procedure** `realizar_matricula(aluno, disciplina)` | `database/procedures/realizar_matricula.sql` | Valida aluno e disciplina, impede matrícula duplicada (`RAISE EXCEPTION`) e insere a matrícula com status `matriculado` | Tela **Matricular aluno** – `/matriculas/novo/` (`CALL realizar_matricula(...)`) |
+| **View** `vw_relatorio_alunos` | `ddl/schema.sql` e `configurar_banco` | Junta (4 INNER JOIN) matrícula, aluno, disciplina e professor, entregando notas e status prontos para relatório | Tela **Relatório (View)** – `/relatorio-view/`, com filtro por disciplina |
+| **Function** `calcular_media_aluno(id)` | `ddl/schema.sql` e `configurar_banco` | Recebe o id do aluno e retorna a média geral das disciplinas que já têm as 3 notas (`NULL` se não houver) | Tela **Média do aluno** – `/media-aluno/` (média geral e boletim) |
+| **Procedure** `realizar_matricula(aluno, disciplina)` | `ddl/schema.sql` e `configurar_banco` | Valida aluno e disciplina, impede matrícula duplicada (`RAISE EXCEPTION`) e insere a matrícula com status `matriculado` | Tela **Matricular aluno** – `/matriculas/novo/` (`CALL realizar_matricula(...)`) |
 
 Fluxo integrado: **tela do sistema → chamada ao banco → View/Function/Procedure → resultado exibido na aplicação.**
 O código das chamadas está em `src/core/views.py` (`relatorio_view`, `media_aluno`, `matricula_create`).
@@ -71,53 +72,102 @@ O código das chamadas está em `src/core/views.py` (`relatorio_view`, `media_al
 ## 🗂 Estrutura do repositório
 
 ```
-gerente_notas/
-├── src/                      # código-fonte da aplicação Django
-├── database/
-│   ├── tables/               # criação das tabelas
-│   ├── views/                # View
-│   ├── functions/            # Function
-│   ├── procedures/           # Procedure
-│   └── inserts/              # dados de teste
-├── docs/                     # consultas JOIN e exemplos de UPDATE/DELETE
+Trabalho_Banco_de_Dados/
+├── src/                          # código-fonte da aplicação Django
+│   ├── core/
+│   │   ├── management/commands/
+│   │   │   ├── configurar_banco.py   # cria tabelas, View, Function, Procedures e dados iniciais
+│   │   │   └── criar_usuario.py      # cria o usuário de login
+│   │   └── supabase_client.py        # cliente da API do Supabase (opcional)
+│   ├── gerente_notas/settings.py     # configuração (Supabase, Redis)
+│   ├── teste_conexoes.py             # testa Supabase e Redis
+│   ├── .env.example                  # modelo das variáveis de ambiente
+│   └── manage.py
+├── ddl/                          # criação das tabelas (schema.sql)
+├── dml/                          # dados de teste
+├── dql/                          # consultas (JOINs, filtros, ordenação)
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
+## 🔌 Integração com Supabase e Redis
+
+| Serviço | Para que serve | Variável de ambiente |
+|---|---|---|
+| **Supabase** (PostgreSQL) | Banco de dados principal: tabelas, View, Function e Procedures | `DATABASE_URL` |
+| **Supabase API** (opcional) | Acesso à API do Supabase por `core/supabase_client.py` | `SUPABASE_URL`, `SUPABASE_KEY` |
+| **Redis** | Cache e armazenamento das **sessões de login** | `REDIS_URL` |
+
+Se `REDIS_URL` estiver vazia, o sistema usa cache em memória e continua funcionando. Se `DATABASE_URL` estiver vazia, usa o PostgreSQL local (`postgresql://postgres:root@localhost:5432/Gerente_Notas`).
+
+### Arquivo `.env`
+
+Crie `src/.env` a partir de `src/.env.example` e preencha com os seus dados:
+
+```dotenv
+SECRET_KEY='sua_chave_secreta_do_django'
+DEBUG=False
+
+# Supabase: Connect > Connection string
+DATABASE_URL=postgresql://postgres.SEU_PROJECT_REF:SUA_SENHA@HOST_DO_POOLER:5432/postgres
+
+SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
+SUPABASE_KEY=sua_chave_publica_do_supabase
+
+# Redis (use rediss:// se o seu Redis tiver TLS)
+REDIS_URL=redis://default:SUA_SENHA@HOST_DO_REDIS:PORTA/0
+```
+
+> ⚠️ O arquivo `.env` contém senhas e está no `.gitignore`: **nunca o envie para o GitHub**. Para gerar a `SECRET_KEY`:
+> `python -c "import secrets; print(secrets.token_urlsafe(50))"`
+
+---
+
 ## ▶️ Como executar
 
-Pré-requisitos: Python 3.10+ e PostgreSQL instalados.
+Pré-requisitos: Python 3.10+, uma conta no Supabase (ou PostgreSQL local) e, opcionalmente, um Redis.
 
 ```bash
-# 1. Criar o banco
-createdb Gerente_Notas
-
-# 2. Criar tabelas, view, function, procedure e dados de teste (nesta ordem)
-psql -d Gerente_Notas -f database/tables/01_tabelas.sql
-psql -d Gerente_Notas -f database/views/vw_relatorio_alunos.sql
-psql -d Gerente_Notas -f database/functions/calcular_media_aluno.sql
-psql -d Gerente_Notas -f database/procedures/realizar_matricula.sql
-psql -d Gerente_Notas -f database/inserts/dados.sql
-
-# 3. Instalar dependências
+# 1. Instalar dependências
 pip install -r requirements.txt
 
-# 4. Preparar o Django e criar o usuário de login
+# 2. Configurar o ambiente
 cd src
+cp .env.example .env        # no Windows: copy .env.example .env  (depois preencha o .env)
+
+# 3. Testar as conexões com Supabase e Redis
+python teste_conexoes.py
+
+# 4. Preparar o Django
 python manage.py migrate
+
+# 5. Criar tabelas, View, Function, Procedures e dados iniciais no banco
+python manage.py configurar_banco
+
+# 6. Criar o usuário de login
 python manage.py createsuperuser
 
-# 5. Rodar
+# 7. Rodar
 python manage.py runserver
 ```
 
 Acesse http://127.0.0.1:8000 e entre com o usuário criado.
 
-> As tabelas são mapeadas pelo Django com `managed = False`, por isso os scripts SQL do passo 2 devem ser executados antes de usar o sistema.
+> As tabelas são mapeadas pelo Django com `managed = False`, por isso o passo 5 (`configurar_banco`) deve ser executado antes de usar o sistema. Os scripts SQL equivalentes estão em `ddl/` e `dml/`.
 
-**Conexão com o banco:** por padrão `postgresql://postgres:root@localhost:5432/Gerente_Notas`. Para usar outra, defina a variável de ambiente `DATABASE_URL` (ex.: `postgresql://usuario:senha@localhost:5432/Gerente_Notas`).
+### Como testar o Redis
+
+```bash
+python manage.py shell
+```
+```python
+from django.core.cache import cache
+cache.set("teste", "ok", 60)
+print(cache.get("teste"))        # deve imprimir: ok
+```
+Para ver as chaves guardadas (sessões de login), use o Redis Insight ou `redis-cli` e liste `KEYS gerente_notas*`.
 
 ---
 
@@ -134,5 +184,6 @@ Acesse http://127.0.0.1:8000 e entre com o usuário criado.
 
 * ✔ 1 View, 1 Function e 1 Procedure, com finalidades diferentes, criadas no banco e usadas pela aplicação
 * ✔ 3 telas/funcionalidades usando os recursos (Relatório View, Média do aluno, Matricular aluno)
-* ✔ Scripts de tabelas, inserts, View, Function e Procedure organizados em `database/`
+* ✔ Scripts de tabelas, inserts, View, Function e Procedure (`ddl/`, `dml/` e `configurar_banco`)
+* ✔ Banco hospedado no Supabase e Redis para cache e sessões
 * ✔ Repositório no GitHub, README e vídeo explicativo
