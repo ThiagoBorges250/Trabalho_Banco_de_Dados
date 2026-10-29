@@ -214,6 +214,7 @@ Na própria aplicação, use o menu **Painel Redis**. Também dá para ver as ch
   Usuário de teste: `Thiago` / senha `1234`. O plano gratuito pode demorar a carregar no primeiro acesso; use em computador.
 * **Vídeo explicativo 1 (Joins):** https://drive.google.com/uc?id=1eb8qdmASeKHIpgChyErokfuOVIvIduei&export=download
 * **Vídeo explicativo 2 (View, Function e Procedure):** https://drive.google.com/uc?id=1mN1ZJNC0kcW2UtfQB1gtx-7VSBX1ZtfH&export=download
+* **Vídeo explicativo 3 (Redis e Supabase):**https://drive.google.com/uc?id=14q31tw1X7R1VekhovmMhNeeKlR21_3gu&export=download
 
 ---
 
